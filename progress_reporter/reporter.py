@@ -1,19 +1,4 @@
-# This file is part of PyEMMA.
-#
-# Copyright (c) 2015, 2014 Computational Molecular Biology Group, Freie Universitaet Berlin (GER)
-#
-# PyEMMA is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 '''
 Created on 16.07.2015
 
@@ -22,10 +7,10 @@ Created on 16.07.2015
 
 from __future__ import absolute_import, print_function
 
-from pyemma._base.progress.bar import ProgressBar as _ProgressBar
-from pyemma._base.progress.bar import show_progressbar as _show_progressbar
-from pyemma._base.progress.bar.gui import hide_progressbar as _hide_progressbar
-from pyemma.util.types import is_int
+from .bar import ProgressBar as _ProgressBar
+from .bar import show_progressbar as _show_progressbar
+from .bar.gui import hide_progressbar as _hide_progressbar
+from numbers import Integral
 
 
 class ProgressReporter(object):
@@ -88,7 +73,7 @@ class ProgressReporter(object):
         if not self.show_progress:
             return
 
-        if not is_int(amount_of_work):
+        if not isinstance(amount_of_work, Integral):
             raise ValueError("amount_of_work has to be of integer type. But is %s"
                              % type(amount_of_work))
 
@@ -106,15 +91,14 @@ class ProgressReporter(object):
             pg = _ProgressBar(amount_of_work, description=description)
 
         self._prog_rep_progressbars[stage] = pg
-       # pg.description = description
         self._prog_rep_descriptions[stage] = description
 
-#     def _progress_set_description(self, stage, description):
-#         """ set description of an already existing progress """
-#         assert hasattr(self, '_prog_rep_progressbars')
-#         assert stage in self._prog_rep_progressbars
-# 
-#         self._prog_rep_progressbars[stage].description = description
+    def _progress_set_description(self, stage, description):
+        """ set description of an already existing progress """
+        assert hasattr(self, '_prog_rep_progressbars')
+        assert stage in self._prog_rep_progressbars
+
+        self._prog_rep_progressbars[stage].description = description
 
     def register_progress_callback(self, call_back, stage=0):
         """ Registers the progress reporter.
