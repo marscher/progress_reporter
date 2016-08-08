@@ -41,7 +41,7 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = "'v'"
-    cfg.parentdir_prefix = "None"
+    cfg.parentdir_prefix = ""
     cfg.versionfile_source = "progress_reporter/_version.py"
     cfg.verbose = False
     return cfg
