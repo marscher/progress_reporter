@@ -21,7 +21,7 @@ with open('README.rst') as f:
 
 kw = dict(name='progress_reporter',
           long_description=long_description,
-          version='1.0',#versioneer.get_version(),
+          version=versioneer.get_version(),
           cmdclass=versioneer.get_cmdclass(),
           classifiers=[c for c in CLASSIFIERS.split('\n')],
           packages=find_packages(),
