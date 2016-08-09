@@ -10,8 +10,7 @@ from __future__ import absolute_import
 import sys
 import warnings
 
-from pyemma import config
-from pyemma._base.progress.bar import ProgressBar
+from . import ProgressBar
 
 
 __all__ = ('is_interactive_session', 'show_progressbar')
@@ -112,7 +111,7 @@ def show_progressbar(bar, show_eta=True, description=''):
 
     Parameters
     ----------
-    bar : instance of pyemma.util.progressbar.ProgressBar
+    bar : instance of progress_reporter.bar.ProgressBar
     show_eta : bool (optional)
 
     show_eta: bool
@@ -120,9 +119,6 @@ def show_progressbar(bar, show_eta=True, description=''):
     description: str
 
     """
-    if not config.show_progress_bars:
-        return
-
     # note: this check ensures we have IPython.display and so on.
     if ipython_notebook_session and isinstance(bar, ProgressBar):
         with warnings.catch_warnings():

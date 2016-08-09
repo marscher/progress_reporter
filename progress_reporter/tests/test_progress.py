@@ -35,7 +35,8 @@ class TestProgress(unittest.TestCase):
         # intentionally overshoot registered work
         with warnings.catch_warnings(record=True) as cm:
             worker._progress_update(101)
-        self.assertIn("more work than registered", cm[0].message[0])
+        assert len(cm) == 1
+        self.assertIn("more work than registered", cm[0].message.args[0])
         worker._progress_force_finish()
 
 
