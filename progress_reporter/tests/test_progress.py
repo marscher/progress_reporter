@@ -7,8 +7,22 @@ Created on 29.07.2015
 from __future__ import absolute_import
 
 import unittest
+from contextlib import contextmanager
 
 from progress_reporter import ProgressReporter
+
+
+@contextmanager
+def captured_output():
+    import sys
+    from io import StringIO
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
 
 
 class TestProgress(unittest.TestCase):
@@ -38,6 +52,26 @@ class TestProgress(unittest.TestCase):
         assert len(cm) == 1
         self.assertIn("more work than registered", cm[0].message.args[0])
         worker._progress_force_finish()
+
+    def test_show_hide(self):
+        worker = ProgressReporter()
+        worker._progress_register(10)
+        worker.show_progress = False
+        with captured_output() as (out, _):
+            worker._progress_update(5)
+
+        self.assertEqual(out.getvalue().strip(), '')
+
+    def test_show(self):
+        worker = ProgressReporter()
+        worker._progress_register(10)
+        worker.show_progress = True
+        with captured_output() as (out, _):
+            worker._progress_update(5)
+
+        self.assertIn('50%', out.getvalue().strip())
+        self.assertIn('5/10', out.getvalue().strip())
+
 
 
 if __name__ == "__main__":
