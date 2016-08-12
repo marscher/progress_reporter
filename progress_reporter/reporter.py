@@ -116,13 +116,7 @@ class ProgressReporter(object):
         if not self.show_progress:
             return
 
-        assert callable(call_back)
-        # check we have the desired function signature
-        from pyemma.util.reflection import getargspec_no_self
-        argspec = getargspec_no_self(call_back)
-        assert len(argspec.args) == 2
-        assert argspec.varargs is not None
-        assert argspec.keywords is not None
+        assert callable(call_back), "given call_back is not callable: {}".format(call_back)
 
         if stage not in self._prog_rep_callbacks:
             self._prog_rep_callbacks[stage] = []
