@@ -19,7 +19,7 @@ Topic :: Utilities"""
 with open('README.rst') as f:
     long_description = f.read()
 
-kw = dict(name='progress-reporter',
+kw = dict(name='progress_reporter',
           long_description=long_description,
           version=versioneer.get_version(),
           cmdclass=versioneer.get_cmdclass(),
