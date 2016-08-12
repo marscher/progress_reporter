@@ -95,8 +95,9 @@ class ProgressReporter(object):
         """ set description of an already existing progress """
         assert hasattr(self, '_prog_rep_progressbars')
         assert stage in self._prog_rep_progressbars
-
+        self._prog_rep_descriptions[stage] = description
         self._prog_rep_progressbars[stage].description = description
+        assert self._prog_rep_progressbars[stage].description == description
 
     def register_progress_callback(self, call_back, stage=0):
         """ Registers the progress reporter.

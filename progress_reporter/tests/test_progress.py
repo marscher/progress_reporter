@@ -72,7 +72,26 @@ class TestProgress(unittest.TestCase):
         self.assertIn('50%', out.getvalue().strip())
         self.assertIn('5/10', out.getvalue().strip())
 
+    def test_dummy(self):
+        worker = ProgressReporter()
+        with captured_output() as (out, _):
+            worker._progress_register(ProgressReporter._pg_threshold)
+            worker._progress_update(ProgressReporter._pg_threshold)
 
+        self.assertEqual(out.getvalue().strip(), '')
+
+    def test_change_description(self):
+        worker = ProgressReporter()
+        worker._progress_register(100, description="test1")
+        with captured_output() as (out, _):
+            worker._progress_update(1)
+            self.assertIn('test1', out.getvalue().strip())
+
+        with captured_output() as (out, _):
+            worker._progress_set_description(stage=0, description='foobar')
+            worker._progress_update(1)
+
+        self.assertIn("foobar", out.getvalue().strip())
 
 if __name__ == "__main__":
     unittest.main()
