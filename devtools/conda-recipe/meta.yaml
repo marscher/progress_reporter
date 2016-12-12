@@ -1,0 +1,30 @@
+package:
+  name: progress_reporter
+  version: "dev"
+
+source:
+  path: ../../
+
+build:
+  noarch_python: True
+  number: 0
+
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+
+test:
+  imports:
+    - progress_reporter
+  requires:
+    - pytest
+    - pytest-ipynb
+    - ipywidgets
+    - notebook
+  commands:
+    - pytest --pyargs -vv progress_reporter

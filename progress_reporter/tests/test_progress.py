@@ -15,7 +15,10 @@ from progress_reporter import ProgressReporter
 @contextmanager
 def captured_output():
     import sys
-    from io import StringIO
+    if sys.version_info[0] == 3:
+        from io import StringIO
+    else:
+        from cStringIO import StringIO
     new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:

@@ -10,12 +10,25 @@ from __future__ import absolute_import
 import sys
 import warnings
 
+from functools import wraps
+
 from . import ProgressBar
 
 
 __all__ = ('is_interactive_session', 'show_progressbar')
 
 
+def _simple_memorize(f):
+    # cache function f result (takes no arguments)
+    @wraps(f)
+    def wrapper():
+        if not hasattr(f, 'res'):
+            f.res = f()
+        return f.res
+    return wrapper
+
+
+@_simple_memorize
 def __ipy_widget_version():
     try:
         import ipywidgets
@@ -29,34 +42,27 @@ def __ipy_widget_version():
             warnings.warn("Consider upgrading to Jupyter (new IPython version) and ipywidgets.",
                           DeprecationWarning)
         except ImportError:
-            return None
+            ver = 0
         else:
-            return 3
+            ver = 3
     else:
-        return 4
+        ver = 4
+    return ver
 
 
+@_simple_memorize
 def __attached_to_ipy_notebook():
     # first determine which IPython version we have (eg. ipywidgets or ipy3 deprecated,
-    # then try to instanciate a widget to determine if we're interactive (raises, if not).
-    if 'IPython' not in sys.modules:
-        return
-    ipy_widget_version = __ipy_widget_version()
+    # then try to instantiate a widget to determine if we're interactive (raises, if not).
 
-    if ipy_widget_version is None:
+    from IPython import get_ipython
+    ip = get_ipython()
+    if ip is None:
         return False
-
-    if ipy_widget_version == 4:
-        from ipywidgets import Box
-    elif ipy_widget_version == 3:
-        from IPython.html.widgets import Box
-    # FIXME: this unfortunately does not raise if frontend is QT...
-    try:
-        Box()
-    except:
+    if not getattr(ip, 'kernel', None):
         return False
-    else:
-        return True
+    # No further checks are feasible
+    return True
 
 
 def __is_interactive():
@@ -71,22 +77,11 @@ def __is_tty_or_interactive_session():
     result = is_tty or is_interactive
     return result
 
-ipython_notebook_session = __attached_to_ipy_notebook()
+ipython_notebook_session = None
 """ are we running an interactive IPython notebook session """
 
 is_interactive_session = __is_tty_or_interactive_session()
 """ do we have a tty or an interactive session? """
-
-
-if ipython_notebook_session:
-    from IPython.display import display
-    __widget_version = __ipy_widget_version()
-    __widget_version = __widget_version if __widget_version is not None else 0
-
-    if __widget_version >= 4:
-        from ipywidgets import Box, Text, IntProgress
-    elif __widget_version == 3:
-        from IPython.html.widgets import Box, Text, IntProgress
 
 
 def hide_widget(widget):
@@ -100,9 +95,34 @@ def hide_progressbar(bar):
         from threading import Timer
         timeout = 2
         Timer(timeout, hide_widget, args=(bar.widget, )).start()
-        #import time
-        #time.sleep(0.5)
-        #bar.widget.close()
+
+
+def _create_widget():
+    __widget_version = __ipy_widget_version()
+    if __widget_version >= 4:
+        from ipywidgets import Box, Text, IntProgress
+    elif __widget_version == 3:
+        from IPython.html.widgets import Box, Text, IntProgress
+    else:
+        #warnings.warn("no widgets possible")
+        return None
+
+    box = Box()
+    text = Text()
+    progress_widget = IntProgress()
+
+    box.children = [text, progress_widget]
+
+    # # make it visible once
+    # display(box)
+
+    # update css for a more compact view
+    progress_widget._css = [
+        ("div", "margin-top", "0px")
+    ]
+    progress_widget.height = "8px"
+    return box
+
 
 def show_progressbar(bar, show_eta=True, description=''):
     """ shows given bar either using an ipython widget, if in
@@ -119,29 +139,26 @@ def show_progressbar(bar, show_eta=True, description=''):
     description: str
 
     """
-    # note: this check ensures we have IPython.display and so on.
+    global ipython_notebook_session
+    if ipython_notebook_session is None:
+        # note: this check ensures we have IPython.display and so on.
+        ipython_notebook_session = __attached_to_ipy_notebook()
+
     if ipython_notebook_session and isinstance(bar, ProgressBar):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', DeprecationWarning)
-            # create IPython widgets on first call
+            # create widget on first call
             if not hasattr(bar, 'widget'):
-
-                box = Box()
-                text = Text()
-                progress_widget = IntProgress()
-
-                box.children = [text, progress_widget]
-                bar.widget = box
-                widget = box
-
-                # make it visible once
-                display(box)
-
-                # update css for a more compact view
-                progress_widget._css = [
-                    ("div", "margin-top", "0px")
-                ]
-                progress_widget.height = "8px"
+                from IPython.display import display
+                widget = _create_widget()
+                if widget is None:
+                    ipython_notebook_session = False
+                    sys.stdout.write("\r{}".format(bar))
+                    sys.stdout.flush()
+                    return
+                bar.widget = widget
+                # # make it visible once
+                display(widget)
             else:
                 widget = bar.widget
 
@@ -149,10 +166,8 @@ def show_progressbar(bar, show_eta=True, description=''):
             desc = description
             if show_eta:
                 desc += ':\tETA:' + bar._generate_eta(bar._eta.eta_seconds)
-            assert isinstance(widget.children[0], Text)
-            assert isinstance(widget.children[1], IntProgress)
             widget.children[0].placeholder = desc
             widget.children[1].value = bar.percent
     else:
-        sys.stdout.write("\r" + str(bar))
+        sys.stdout.write("\r{}".format(bar))
         sys.stdout.flush()
