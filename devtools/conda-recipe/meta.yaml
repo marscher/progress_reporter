@@ -19,7 +19,7 @@ requirements:
     - python
 
 test:
-  requirements:
+  requires:
     - pytest
     - pytest-ipynb
     - ipywidgets
