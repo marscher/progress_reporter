@@ -15,7 +15,7 @@ from progress_reporter import ProgressReporter
 @contextmanager
 def captured_output():
     import sys
-    if sys.version_info == 3:
+    if sys.version_info[0] == 3:
         from io import StringIO
     else:
         from cStringIO import StringIO
