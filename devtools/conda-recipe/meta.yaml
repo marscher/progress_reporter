@@ -19,6 +19,8 @@ requirements:
     - python
 
 test:
+  imports:
+    - progress_reporter
   requires:
     - pytest
     - pytest-ipynb
