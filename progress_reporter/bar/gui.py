@@ -52,17 +52,18 @@ def __ipy_widget_version():
 
 @_simple_memorize
 def __attached_to_ipy_notebook():
-    # first determine which IPython version we have (eg. ipywidgets or ipy3 deprecated,
-    # then try to instantiate a widget to determine if we're interactive (raises, if not).
-
-    from IPython import get_ipython
-    ip = get_ipython()
-    if ip is None:
+    # check if we have an ipython kernel
+    try:
+        from IPython import get_ipython
+        ip = get_ipython()
+        if ip is None:
+            return False
+        if not getattr(ip, 'kernel', None):
+            return False
+        # No further checks are feasible
+        return True
+    except ImportError:
         return False
-    if not getattr(ip, 'kernel', None):
-        return False
-    # No further checks are feasible
-    return True
 
 
 def __is_interactive():
