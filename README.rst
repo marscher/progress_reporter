@@ -79,3 +79,16 @@ This is just the dictionary key to the underlying process:
             for job in (lambda: time.sleep(0.2) for _ in range(self.n_jobs)):
                 job()
                 self._progress_update(1, stage=1)
+
+Since version 2.0 there is also a version of the this class suitable for compositions. Note that
+
+.. code:: python
+    from progress_reporter import ProgressReporter_
+
+    class Estimator(object):
+        def fit(self, X, y=None):
+            pg = ProgressReporter_()
+            pg.register(100, description='work')
+            with pg.context(): # ensure progress bars are closed if an exception occurs.
+                pg.update(50)
+                # ...
