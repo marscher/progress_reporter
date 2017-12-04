@@ -80,9 +80,10 @@ This is just the dictionary key to the underlying process:
                 job()
                 self._progress_update(1, stage=1)
 
-Since version 2.0 there is also a version of the this class suitable for compositions. Note that
+Since version 2.0 there is also a version of the this class suitable for compositions.
 
 .. code:: python
+
     from progress_reporter import ProgressReporter_
 
     class Estimator(object):
