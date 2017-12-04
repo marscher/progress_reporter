@@ -250,6 +250,8 @@ class ProgressReporter(object):
         return tuple(self._prog_rep_progressbars.keys())
 
 
+ProgressReporterMixIn = ProgressReporter
+
 class ProgressReporter_(ProgressReporter):
     """ class to report progress for multiple stages. Suitable for composition.
     """
