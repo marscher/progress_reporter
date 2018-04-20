@@ -5,7 +5,7 @@ from tqdm._tqdm_notebook import tqdm_notebook
 class my_tqdm_notebook(tqdm_notebook):
 
     @staticmethod
-    def status_printer(_, total=None, desc=None):
+    def status_printer(_, total=None, desc=None, ncols=None):
         # Prepare IPython progress bar
         from ipywidgets import IntProgress, HTML, HBox, Layout, Label
 
@@ -16,25 +16,44 @@ class my_tqdm_notebook(tqdm_notebook):
             pbar.value = 1
             pbar.bar_style = 'info'
         if desc:
-            description = HBox(children=[Label(desc)])
-            description.layout.min_width = '35%'
-            description.layout.max_width = '35%'
+            description = Label(desc)
+            description_box = HBox(children=[description])
+            description_box.layout.min_width = '35%'
+            description_box.layout.max_width = '35%'
         else:
-            description = None
+            description_box = None
 
         # Prepare status text
         ptext = HTML()
+        # Prepare layout
         inner = HBox([pbar, ptext],
                      layout=Layout(padding='0 0 0 20px'))
         # Only way to place text to the right of the bar is to use a container
         box_layout = Layout(display='flex',
                             width='100%')
-        container = HBox(children=[description, inner] if description else [inner],
+        container = HBox(children=[description_box, inner] if description_box else [inner],
                          layout=box_layout)
+
+        if ncols is not None:  # use default style of ipywidgets
+            # ncols could be 100, "100px", "100%"
+            ncols = str(ncols)  # ipywidgets only accepts string
+            if ncols[-1].isnumeric():
+                # if last value is digit, assume the value is digit
+                ncols += 'px'
+            pbar.layout.flex = '2'
+            container.layout.width = ncols
+            container.layout.display = 'inline-flex'
+            container.layout.flex_flow = 'row wrap'
         from IPython.core.display import display
         display(container)
 
-        def print_status(s='', close=False, bar_style=None):
+        # HTML encoding
+        try:  # Py3
+            from html import escape
+        except ImportError:  # Py2
+            from cgi import escape
+
+        def print_status(s='', close=False, bar_style=None, desc=None):
             # Note: contrary to native tqdm, s='' does NOT clear bar
             # goal is to keep all infos if error happens so user knows
             # at which iteration the loop failed.
@@ -44,12 +63,12 @@ class my_tqdm_notebook(tqdm_notebook):
 
             # Get current iteration value from format_meter string
             if total:
-                n = None
+                # n = None
                 if s:
                     npos = s.find(r'/|/')  # cause we use bar_format=r'{n}|...'
                     # Check that n can be found in s (else n > total)
                     if npos >= 0:
-                        n = int(float((s[:npos])))  # get n from string
+                        n = int(s[:npos])  # get n from string
                         s = s[npos + 3:]  # remove from string
 
                         # Update bar with current n value
@@ -59,7 +78,6 @@ class my_tqdm_notebook(tqdm_notebook):
             # Print stats
             if s:  # never clear the bar (signal: s='')
                 s = s.replace('||', '')  # remove inesthetical pipes
-                from html import escape
                 s = escape(s)  # html escape special characters (like '?')
                 ptext.value = s
 
@@ -76,5 +94,9 @@ class my_tqdm_notebook(tqdm_notebook):
                     container.close()
                 except AttributeError:
                     container.visible = False
+
+            # Update description
+            if desc:
+                description.value = desc
 
         return print_status
