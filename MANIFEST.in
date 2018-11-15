@@ -1,5 +1,5 @@
 include versioneer.py
 include progress_reporter/_version.py
 
-include progress_reporter/tests/*.ipynb
 include LICENSE.rst
+include README.rst

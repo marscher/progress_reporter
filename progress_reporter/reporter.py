@@ -60,13 +60,6 @@ class ProgressReporter(object):
         return self.__prog_rep_progressbars
 
     @property
-    def _prog_rep_descriptions(self):
-        # stores progressbar description strings per stage. Can contain format parameters
-        if not hasattr(self, '_ProgressReporter__prog_rep_descriptions'):
-            self.__prog_rep_descriptions = {}
-        return self.__prog_rep_descriptions
-
-    @property
     def _prog_rep_callbacks(self):
         # store callback by stage
         if not hasattr(self, '_ProgressReporter__prog_rep_callbacks'):
@@ -146,18 +139,15 @@ class ProgressReporter(object):
                 from .notebook import my_tqdm_notebook
                 pg = my_tqdm_notebook(leave=False, **args)
             else:
-                import tqdm
+                from ._vendor import tqdm
                 pg = tqdm.tqdm(leave=True, **args)
 
         self._prog_rep_progressbars[stage] = pg
-        self._prog_rep_descriptions[stage] = description
         assert stage in self._prog_rep_progressbars
-        assert stage in self._prog_rep_descriptions
 
     def _progress_set_description(self, stage, description):
         """ set description of an already existing progress """
         pg = self.__check_stage_registered(stage)
-        self._prog_rep_descriptions[stage] = description
         if pg:
             pg.set_description(description, refresh=True)
 
@@ -229,7 +219,6 @@ class ProgressReporter(object):
         pg.refresh(nolock=True)
         pg.close()
         self._prog_rep_progressbars.pop(stage, None)
-        self._prog_rep_descriptions.pop(stage, None)
         self._prog_rep_callbacks.pop(stage, None)
 
     def _progress_refresh(self, stage=0):

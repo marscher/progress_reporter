@@ -23,10 +23,12 @@ requirements:
 test:
   imports:
     - progress_reporter
+  source_files:
+    - tests/
   requires:
     - pytest
-    - pytest-ipynb
+    - nbval
     - ipywidgets
     - notebook
   commands:
-    - pytest --pyargs -vv progress_reporter
+    - pytest --nbval -vv tests
