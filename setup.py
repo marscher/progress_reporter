@@ -24,12 +24,14 @@ kw = dict(name='progress-reporter',
           version=versioneer.get_version(),
           cmdclass=versioneer.get_cmdclass(),
           classifiers=[c for c in CLASSIFIERS.split('\n')],
-          install_requires=['tqdm>=4.23'],
+          # version >= 2.0 includes tqdm-4.28.1 for sake of silence
+          #install_requires=['tqdm>=4.23'],
           packages=find_packages(),
           package_data={'progress_reporter.tests': ['*.ipynb']},
           url='https://github.com/marscher/progress_reporter',
           keywords=['progress', 'reporting', 'eta', 'gui'],
           license='MIT',
           )
+
 if __name__ == '__main__':
     setup(**kw)

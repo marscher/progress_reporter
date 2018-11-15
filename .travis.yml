@@ -4,7 +4,6 @@ before_install:
 - export PATH=~/miniconda/bin:$PATH
 - devtools/ci/travis/install_miniconda.sh
 - conda config --set always_yes true
-- conda config --add channels omnia # for pytest-ipynb
 - conda config --add channels conda-forge
 - conda install -q conda-build
 

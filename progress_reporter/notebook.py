@@ -1,4 +1,4 @@
-from tqdm._tqdm_notebook import tqdm_notebook
+from ._vendor.tqdm._tqdm_notebook import tqdm_notebook
 
 
 # we just override the default formatting of the widget here
